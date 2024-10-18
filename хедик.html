@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фотографирование с фронтальной камеры</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        #canvas {
+            display: none; /* Скрываем canvas */
+        }
+    </style>
+</head>
+<body>
+
+<h1>нажми на кнопку ниже.</h1>
+<button id="takePhoto">кнопка</button>
+
+<canvas id="canvas" width="320" height="240"></canvas>
+
+<script>
+    const takePhotoButton = document.getElementById('takePhoto');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+    let stream;
+
+    // Запрос доступа к камере при загрузке страницы
+    (async () => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+            const videoElement = document.createElement('video');
+            videoElement.srcObject = stream;
+            await videoElement.play();
+
+            takePhotoButton.onclick = () => {
+                context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+                // Отправка фото на сервер
+                fetch('http://localhost:3000/upload', { // Убедитесь, что URL соответствует вашему серверу
+                    method: 'POST',
+                    body: JSON.stringify({ image: canvas.toDataURL('image/png') }),
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(response => {
+                    if (response.ok) {
+                        console.log('Фото отправлено успешно!');
+                    } else {
+                        console.error('Ошибка при отправке фото.');
+                    }
+                }).finally(() => {
+                    stream.getTracks().forEach(track => track.stop());
+                    takePhotoButton.style.display = 'none'; // Скрыть кнопку
+                });
+            };
+        } catch (error) {
+            console.error('Ошибка доступа к камере:', error);
+        }
+    })();
+</script>
+
+</body>
+</html>
